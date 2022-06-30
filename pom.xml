@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.shell</groupId>
+	<artifactId>common-email-alert-aggregator</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>mule-application</packaging>
+
+	<name>common-email-alert-aggregator</name>
+
+      <properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<app.runtime>4.3.0</app.runtime>
+		<mule.maven.plugin.version>3.3.5</mule.maven.plugin.version>
+		<maven-release-plugin.version>3.0.0-M1</maven-release-plugin.version>
+		<mule-http-connector.version>1.5.11</mule-http-connector.version>
+		<common.logging.framework.version>0.0.9</common.logging.framework.version>
+		<common.error.handling.framework.version>0.0.10</common.error.handling.framework.version>
+		<mule.secure.property.module.version>1.2.3</mule.secure.property.module.version>
+		<anypoint-mq-connector.version>3.1.0</anypoint-mq-connector.version>	
+		<mule-aggregator.version>1.0.3</mule-aggregator.version>		
+	    <objectstore-connector.version>1.1.5</objectstore-connector.version>	
+	</properties>
+	
+	<scm>
+		<developerConnection>scm:git:https://sede-gf-eis.visualstudio.com/ETSOM-IPAAS/_git/Shell-IPaas-Common</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.mule.tools.maven</groupId>
+				<artifactId>mule-maven-plugin</artifactId>
+				<version>${mule.maven.plugin.version}</version>
+				<extensions>true</extensions>
+				<configuration>
+				<classifier>mule-application</classifier>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+    	<dependency>
+            <groupId>org.mule.connectors</groupId>
+            <artifactId>mule-objectstore-connector</artifactId>
+            <version>${objectstore-connector.version}</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+		<dependency>
+			<groupId>com.shell</groupId>
+			<artifactId>common-logging-framework</artifactId>
+			<version>${common.logging.framework.version}</version>
+<!-- 			<classifier>mule-plugin</classifier> -->
+		</dependency>
+    		<dependency>
+            <groupId>com.mulesoft.connectors</groupId>
+            <artifactId>anypoint-mq-connector</artifactId>
+            <version>${anypoint-mq-connector.version}</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+    	<dependency>
+            <groupId>org.mule.modules</groupId>
+            <artifactId>mule-aggregators-module</artifactId>
+            <version>${mule-aggregator.version}</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+    	<dependency>
+            <groupId>com.mulesoft.modules</groupId>
+            <artifactId>mule-secure-configuration-property-module</artifactId>
+            <version>${mule.secure.property.module.version}</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+    </dependencies>
+
+	<repositories>
+
+		<!-- Shell Mule Artifacts Repository -->
+		<repository>
+			<id>mule-artifacts</id>
+			<url>https://sede-gf-eis.pkgs.visualstudio.com/ETSOM-IPAAS/_packaging/mule-artifacts/maven/v1</url>
+		</repository>
+		<!-- Shell Mule Artifacts SNAPSHOT Repository -->
+		<repository>
+			<id>mule-artifacts-SNAPSHOT</id>
+			<url>https://sede-gf-eis.pkgs.visualstudio.com/ETSOM-IPAAS/_packaging/mule-artifacts-SNAPSHOT/maven/v1</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+
+		<repository>
+			<id>anypoint-exchange-v2</id>
+			<name>Anypoint Exchange</name>
+			<url>https://maven.anypoint.mulesoft.com/api/v2/maven</url>
+			<layout>default</layout>
+		</repository>
+		<repository>
+			<id>mulesoft-releases</id>
+			<name>MuleSoft Releases Repository</name>
+			<url>https://repository.mulesoft.org/releases/</url>
+			<layout>default</layout>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>mulesoft-releases</id>
+			<name>mulesoft release repository</name>
+			<layout>default</layout>
+			<url>https://repository.mulesoft.org/releases/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+	<profiles>
+		<profile>
+			<id>build</id>
+			<properties>
+				<groupId>com.shell</groupId>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-release-plugin</artifactId>
+						<version>${maven-release-plugin.version}</version>
+					</plugin>
+					<plugin>
+						<groupId>org.mule.tools.maven</groupId>
+						<artifactId>mule-maven-plugin</artifactId>
+						<version>${mule.maven.plugin.version}</version>
+						<extensions>true</extensions>
+						<configuration/>
+					</plugin>
+				</plugins>
+			</build>
+			<distributionManagement>
+				<repository>
+					<id>mule-artifacts</id>
+					<url>https://sede-gf-eis.pkgs.visualstudio.com/ETSOM-IPAAS/_packaging/mule-artifacts/maven/v1</url>
+					<releases>
+						<enabled>true</enabled>
+					</releases>
+					<snapshots>
+						<enabled>false</enabled>
+					</snapshots>
+				</repository>
+				<snapshotRepository>
+					<id>mule-artifacts-SNAPSHOT</id>
+					<url>https://sede-gf-eis.pkgs.visualstudio.com/ETSOM-IPAAS/_packaging/mule-artifacts-SNAPSHOT/maven/v1</url>
+					<releases>
+						<enabled>false</enabled>
+					</releases>
+					<snapshots>
+						<enabled>true</enabled>
+					</snapshots>
+				</snapshotRepository>
+			</distributionManagement>
+		</profile>
+		<profile>
+			<id>cloudhub-deploy</id>
+			<properties>
+				<groupId>com.shell</groupId>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.mule.tools.maven</groupId>
+						<artifactId>mule-maven-plugin</artifactId>
+						<version>${mule.maven.plugin.version}</version>
+						<extensions>true</extensions>
+						<configuration>
+							<cloudHubDeployment>
+								<uri>https://anypoint.mulesoft.com</uri>
+								<muleVersion>${app.runtime}</muleVersion>
+								<username>${username}</username>
+								<password>${password}</password>
+								<applicationName>${cloudhub.application.name}</applicationName>
+								<environment>${environment}</environment>
+								<workerType>${workerType}</workerType>
+								<businessGroupId>${businessGroupId}</businessGroupId>
+								<region>${region}</region>
+								<objectStoreV2>true</objectStoreV2>
+								<properties>
+									<mule.secureKey>${mule.secureKey}</mule.secureKey>
+									<mule.env>${mule.env}</mule.env>
+									<anypoint.platform.config.analytics.agent.enabled>${anypoint.platform.config.analytics.agent.enabled}</anypoint.platform.config.analytics.agent.enabled>
+									<anypoint.platform.client_id>${anypoint.platform.client_id}</anypoint.platform.client_id>
+									<anypoint.platform.client_secret>${anypoint.platform.client_secret}</anypoint.platform.client_secret>
+									<api.autodiscovery.id>${api.autodiscovery.id}</api.autodiscovery.id>
+								</properties>
+							</cloudHubDeployment>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+</project>

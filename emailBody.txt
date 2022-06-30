@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<p>Dear Users,</p>
+
+<p>Please refer attached document for error details.</p>
+
+<p>For further information please raise a SNOW ticket for the assignment group GLBETFNDDPIPAASINC.</p>
+
+<p><b>Note : This is a system-generated email. Please do not reply to this message.</p></b>
+
+<p>Thanks,</p>
+<p>MuleSoft SOM</p>
+
+</body>
+</html>

@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:aggregators="http://www.mulesoft.org/schema/mule/aggregators" xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.mulesoft.org/schema/mule/aggregators http://www.mulesoft.org/schema/mule/aggregators/current/mule-aggregators.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+	<flow name="common-email-alert-aggregator-30min-flow" doc:id="5a43591e-9e72-464e-ae7d-8b876788baf8" maxConcurrency="1">
+ 		<anypoint-mq:subscriber doc:name="Subscriber" doc:id="a799653e-163e-4136-9da6-13d64d34050c" config-ref="error-notify-queue-anypoint-mq-config" destination="${mq.aggr30minQueue}" acknowledgementMode="MANUAL">
+			<anypoint-mq:subscriber-type >
+				<anypoint-mq:polling fetchSize="${subscriber.fetchsize}">
+					<scheduling-strategy >
+						<fixed-frequency frequency="${subscriber.frequency}" startDelay="${subscriber.startdelay}"/>
+					</scheduling-strategy>
+				</anypoint-mq:polling>
+			</anypoint-mq:subscriber-type>
+		</anypoint-mq:subscriber>
+		<ee:transform doc:name="additionalLogInfo" doc:id="5fc3ce13-107d-48e1-8956-c7366adbbbcb">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable resource="dwl\additionalLogInfo.dwl" variableName="additionalLogInfo" />
+				<ee:set-variable variableName="currentAckToken30min"><![CDATA[attributes.ackToken]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		
+		<flow-ref doc:name="log-request-received" doc:id="920023d4-81d6-41b4-a5e7-3751e09233e4" name="log-request-received"/>
+		<ee:transform doc:name="Appending Queue Name" doc:id="a823da2b-28ec-4993-a3e1-1e0994f4d4e7">
+			<ee:message>
+				<ee:set-payload resource="dwl\appending_queue_name.dwl" />
+			</ee:message>
+		</ee:transform>
+		<aggregators:group-based-aggregator doc:name="Group based aggregator" doc:id="f1e7803b-7d21-4421-9149-8b888a06020c" name="groupbasedaggr" objectStore="Group_Object_store" groupId="#[payload.appName]" groupSize="${aggr.groupSize}" timeout="${timeout.aggr30minQueue}" timeoutUnit="MINUTES" evictionTime="0">
+			<aggregators:incremental-aggregation>
+				<logger level="DEBUG" doc:name="Aggregating payload" doc:id="b21251cd-66d7-4d3c-8d55-40fa83a1bd16" message="#[payload]" />
+			</aggregators:incremental-aggregation>
+			<aggregators:aggregation-complete>
+				<logger level="DEBUG" doc:name="Aggregation completed" doc:id="1b5961d7-7da4-48e5-b741-bbd72799e2d9" message="Aggregation complete --#[payload]" />
+			</aggregators:aggregation-complete>
+		</aggregators:group-based-aggregator>
+		<anypoint-mq:ack doc:name="Manual Ack" doc:id="b1077aab-5c53-469c-9f40-07e1bbe085e6" config-ref="error-notify-queue-anypoint-mq-config" ackToken="#[vars.currentAckToken30min]"/>
+		<flow-ref doc:name="log-response-returned" doc:id="a44b0e9c-4e61-4351-b896-16eaf980ec54" name="log-response-returned"/>
+	</flow>
+	<flow name="common-email-alert-aggregator-1hr-flow" doc:id="3fd49113-ade2-44c7-8297-293ed2cadce4" maxConcurrency="1">
+ 		<anypoint-mq:subscriber doc:name="Subscriber" doc:id="8694e625-ec64-4c8d-adae-a79d47047d47" config-ref="error-notify-queue-anypoint-mq-config" destination="${mq.aggr1hourQueue}" acknowledgementMode="MANUAL">
+			<anypoint-mq:subscriber-type >
+				<anypoint-mq:polling fetchSize="${subscriber.fetchsize}">
+					<scheduling-strategy >
+						<fixed-frequency frequency="${subscriber.frequency}" startDelay="${subscriber.startdelay}"/>
+					</scheduling-strategy>
+				</anypoint-mq:polling>
+			</anypoint-mq:subscriber-type>
+		</anypoint-mq:subscriber>
+		<ee:transform doc:name="additionalLogInfo" doc:id="271f4b19-d5a2-4943-9593-d5125e1a3ba8">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable resource="dwl\additionalLogInfo.dwl" variableName="additionalLogInfo" />
+				<ee:set-variable variableName="currentAckToken1hr"><![CDATA[attributes.ackToken]]></ee:set-variable>
+			
+</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="log-request-received" doc:id="c59de00b-c1c5-43e5-98e2-b32c97c963b7" name="log-request-received"/>
+		<ee:transform doc:name="Appending Queue Name" doc:id="6116118b-aa11-4962-8076-11e92be70b00">
+			<ee:message>
+				<ee:set-payload resource="dwl\appending_queue_name.dwl" />
+			
+</ee:message>
+		</ee:transform>
+		<aggregators:group-based-aggregator doc:name="Group based aggregator" doc:id="5e2c175f-221b-4656-ada3-105a6b0b2ee9" name="groupbasedaggr" objectStore="Group_Object_store" groupId="#[payload.appName]" groupSize="${aggr.groupSize}" timeout="${timeout.aggr1hourQueue}" timeoutUnit="MINUTES" evictionTime="0">
+			<aggregators:incremental-aggregation>
+				<logger level="DEBUG" doc:name="Aggregating payload" doc:id="6f42cccb-7589-4dd0-b17b-8a06a11456c5" message="groupbasedaggr" />
+			</aggregators:incremental-aggregation>
+			<aggregators:aggregation-complete>
+				<logger level="DEBUG" doc:name="Aggregation completed" doc:id="65393e5c-e6f4-40cc-8ea6-3bdddcab985e" message="grp based aggr complete" />
+			</aggregators:aggregation-complete>
+		</aggregators:group-based-aggregator>
+		<anypoint-mq:ack doc:name="Manual Ack" doc:id="4b530da6-3f38-4daa-b0f7-5e0f6cabe0e5" config-ref="error-notify-queue-anypoint-mq-config" ackToken="#[vars.currentAckToken1hr]"/>
+		<flow-ref doc:name="log-response-returned" doc:id="d2126faa-410a-494f-a2a5-88db3dd706fa" name="log-response-returned"/> 
+	
+</flow>
+	<flow name="common-email-alert-aggregator-2hr-flow" doc:id="3f9dec3c-f35d-4f65-bd26-a3f16ef1ef08" maxConcurrency="1">
+ 		<anypoint-mq:subscriber doc:name="Subscriber" doc:id="83c6a49e-0b8d-4e89-9056-9896b1342586" config-ref="error-notify-queue-anypoint-mq-config" destination="${mq.aggr2hourQueue}" acknowledgementMode="MANUAL">
+			<anypoint-mq:subscriber-type >
+				<anypoint-mq:polling fetchSize="${subscriber.fetchsize}">
+					<scheduling-strategy >
+						<fixed-frequency frequency="${subscriber.frequency}" startDelay="${subscriber.startdelay}"/>
+					</scheduling-strategy>
+				</anypoint-mq:polling>
+			</anypoint-mq:subscriber-type>
+		</anypoint-mq:subscriber>
+		<ee:transform doc:name="additionalLogInfo" doc:id="1b1d3bb9-9cd7-47d8-94f6-8466ae33d8b1">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable resource="dwl\additionalLogInfo.dwl" variableName="additionalLogInfo" />
+				<ee:set-variable variableName="currentAckToken2hr"><![CDATA[attributes.ackToken]]></ee:set-variable>
+			
+</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="log-request-received" doc:id="a4ca807a-30a6-4532-8bff-9dc90b9d33d6" name="log-request-received"/>
+		<ee:transform doc:name="Appending Queue Name" doc:id="9bf882be-32dc-42fe-a50d-ea6f2c30d3cb">
+			<ee:message>
+				<ee:set-payload resource="dwl\appending_queue_name.dwl" />
+			</ee:message>
+		</ee:transform>
+		<aggregators:group-based-aggregator doc:name="Group based aggregator" doc:id="7657475b-338e-4cf1-9206-87f7145289bf" name="groupbasedaggr" objectStore="Group_Object_store" groupId="#[payload.appName]" groupSize="${aggr.groupSize}" timeout="${timeout.aggr2hourQueue}" timeoutUnit="MINUTES" evictionTime="0">
+			<aggregators:incremental-aggregation>
+				<logger level="DEBUG" doc:name="Aggregating payload" doc:id="fd301f9e-127d-472f-89e6-56599cc55525" message="groupbasedaggr" />
+			</aggregators:incremental-aggregation>
+			<aggregators:aggregation-complete>
+				<logger level="DEBUG" doc:name="Aggregation completed" doc:id="0cef712e-152a-4bee-ad6f-9f4e65b9d254" message="grp based aggr complete" />
+			</aggregators:aggregation-complete>
+		</aggregators:group-based-aggregator>
+		<anypoint-mq:ack doc:name="Manual Ack" doc:id="ebb3a238-91e5-4ff4-a2cd-de0d0c8a450d" config-ref="error-notify-queue-anypoint-mq-config" ackToken="#[vars.currentAckToken2hr]"/>
+		<flow-ref doc:name="log-response-returned" doc:id="48d58a29-599e-4136-8c9c-f644608052f4" name="log-response-returned"/> 
+	
+</flow>
+	<flow name="common-email-alert-aggregator-4hr-flow" doc:id="e088dc2b-03e6-4744-b164-67dc4daa9d3d" maxConcurrency="1">
+ 		<anypoint-mq:subscriber doc:name="Subscriber" doc:id="97d26d21-da56-4d6f-a5c7-f734e3f5e1f0" config-ref="error-notify-queue-anypoint-mq-config" destination="${mq.aggr4hourQueue}" acknowledgementMode="MANUAL">
+			<anypoint-mq:subscriber-type >
+				<anypoint-mq:polling fetchSize="${subscriber.fetchsize}">
+					<scheduling-strategy >
+						<fixed-frequency frequency="${subscriber.frequency}" startDelay="${subscriber.startdelay}"/>
+					</scheduling-strategy>
+				</anypoint-mq:polling>
+			</anypoint-mq:subscriber-type>
+		</anypoint-mq:subscriber>
+		<ee:transform doc:name="additionalLogInfo" doc:id="a30be3e2-c73e-4751-b131-475b9d69d5fa">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable resource="dwl\additionalLogInfo.dwl" variableName="additionalLogInfo" />
+				<ee:set-variable variableName="currentAckToken4hr"><![CDATA[attributes.ackToken]]></ee:set-variable>
+			
+</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="log-request-received" doc:id="3d6cb6f2-0327-4745-a077-e42fbe283840" name="log-request-received"/>
+		<ee:transform doc:name="Appending Queue Name" doc:id="426b02f5-1ba6-4ca4-8de9-b054b05ecb60">
+			<ee:message>
+				<ee:set-payload resource="dwl\appending_queue_name.dwl" />
+			</ee:message>
+		</ee:transform>
+		<aggregators:group-based-aggregator doc:name="Group based aggregator" doc:id="c2a7a433-0db6-4584-a91d-f9ad365b863f" name="groupbasedaggr" objectStore="Group_Object_store" groupId="#[payload.appName]" groupSize="${aggr.groupSize}" timeout="${timeout.aggr4hourQueue}" timeoutUnit="MINUTES" evictionTime="0">
+			<aggregators:incremental-aggregation>
+				<logger level="DEBUG" doc:name="Aggregating payload" doc:id="55cbf2a3-08af-43b2-9a00-69c91e66a4ef" message="groupbasedaggr" />
+			</aggregators:incremental-aggregation>
+			<aggregators:aggregation-complete>
+				<logger level="DEBUG" doc:name="Aggregation completed" doc:id="f5a7ce3a-ac87-4c49-831f-23cb2fd4a22b" message="grp based aggr complete" />
+			</aggregators:aggregation-complete>
+		</aggregators:group-based-aggregator>
+		<anypoint-mq:ack doc:name="Manual Ack" doc:id="87017fb7-3a95-4913-85bf-cc8df9ed3f1e" config-ref="error-notify-queue-anypoint-mq-config" ackToken="#[vars.currentAckToken4hr]"/>
+		<flow-ref doc:name="log-response-returned" doc:id="1fe89fa6-339a-4742-a607-9292f90715ba" name="log-response-returned"/> 
+	
+</flow>
+	<flow name="common-email-alert-aggregator-8hr-flow" doc:id="e9941e7a-7d7b-4173-871e-a9354e21fdbb" maxConcurrency="1">
+ 		<anypoint-mq:subscriber doc:name="Subscriber" doc:id="25f5a557-342a-4e56-ba8b-e33a85dc5960" config-ref="error-notify-queue-anypoint-mq-config" destination="${mq.aggr8hourQueue}" acknowledgementMode="MANUAL">
+			<anypoint-mq:subscriber-type >
+				<anypoint-mq:polling fetchSize="${subscriber.fetchsize}">
+					<scheduling-strategy >
+						<fixed-frequency frequency="${subscriber.frequency}" startDelay="${subscriber.startdelay}"/>
+					</scheduling-strategy>
+				</anypoint-mq:polling>
+			</anypoint-mq:subscriber-type>
+		</anypoint-mq:subscriber>
+		<ee:transform doc:name="additionalLogInfo" doc:id="8c17ee51-5854-4afb-afd5-e6d7bdd074b4">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable resource="dwl\additionalLogInfo.dwl" variableName="additionalLogInfo" />
+				<ee:set-variable variableName="currentAckToken8hr"><![CDATA[attributes.ackToken]]></ee:set-variable>
+			
+</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="log-request-received" doc:id="a51c1f13-55f4-426f-a63d-0d3215ad35ee" name="log-request-received"/>
+		<ee:transform doc:name="Appending Queue Name" doc:id="c7a3c099-efc1-4548-b8b9-a18c1cb4d64e">
+			<ee:message>
+				<ee:set-payload resource="dwl\appending_queue_name.dwl" />
+			</ee:message>
+		</ee:transform>
+		<aggregators:group-based-aggregator doc:name="Group based aggregator" doc:id="44e9da82-85f2-4367-b127-d867456a9c2f" name="groupbasedaggr" objectStore="Group_Object_store" groupId="#[payload.appName]" groupSize="${aggr.groupSize}" timeout="${timeout.aggr8hourQueue}" timeoutUnit="MINUTES" evictionTime="0">
+			<aggregators:incremental-aggregation>
+				<logger level="DEBUG" doc:name="Aggregating payload" doc:id="43104482-8de0-446f-bfe0-6107069ecb95" message="groupbasedaggr" />
+			</aggregators:incremental-aggregation>
+			<aggregators:aggregation-complete>
+				<logger level="DEBUG" doc:name="Aggregation completed" doc:id="83c60fcb-67cf-4fcf-90de-67755a172903" message="grp based aggr complete" />
+			</aggregators:aggregation-complete>
+		</aggregators:group-based-aggregator>
+		<anypoint-mq:ack doc:name="Manual Ack" doc:id="d09407dc-4c75-41f3-b6fc-989363e6c6c8" config-ref="error-notify-queue-anypoint-mq-config" ackToken="#[vars.currentAckToken8hr]"/>
+		<flow-ref doc:name="log-response-returned" doc:id="65bb232c-d583-4877-8f08-8e0e4bd7c1aa" name="log-response-returned"/> 
+	
+</flow>
+		<flow name="common-email-alert-aggregator-12hr-flow" doc:id="83713017-936a-4305-9080-fcdf11a33ebb" maxConcurrency="1">
+ 		<anypoint-mq:subscriber doc:name="Subscriber" doc:id="28cdae36-624c-4e2a-ab38-55419de57265" config-ref="error-notify-queue-anypoint-mq-config" destination="${mq.aggr12hourQueue}" acknowledgementMode="MANUAL">
+			<anypoint-mq:subscriber-type >
+				<anypoint-mq:polling fetchSize="${subscriber.fetchsize}">
+					<scheduling-strategy >
+						<fixed-frequency frequency="${subscriber.frequency}" startDelay="${subscriber.startdelay}"/>
+					</scheduling-strategy>
+				</anypoint-mq:polling>
+			</anypoint-mq:subscriber-type>
+		</anypoint-mq:subscriber>
+		<ee:transform doc:name="additionalLogInfo" doc:id="18eee0e2-bceb-4e5d-9b6a-60ff6f655094">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable resource="dwl\additionalLogInfo.dwl" variableName="additionalLogInfo" />
+				<ee:set-variable variableName="currentAckToken12hr"><![CDATA[attributes.ackToken]]></ee:set-variable>
+			
+</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="log-request-received" doc:id="63775a30-a2bd-4254-8cf7-50cb29a21aa6" name="log-request-received"/>
+		<ee:transform doc:name="Appending Queue Name" doc:id="84eeab8f-2fb0-4ccc-9df3-2800d9ce856a">
+			<ee:message>
+				<ee:set-payload resource="dwl\appending_queue_name.dwl" />
+			</ee:message>
+		</ee:transform>
+		<aggregators:group-based-aggregator doc:name="Group based aggregator" doc:id="c7535ebd-25a6-43cb-9bdb-67ec695b5bc5" name="groupbasedaggr" objectStore="Group_Object_store" groupId="#[payload.appName]" groupSize="${aggr.groupSize}" timeout="${timeout.aggr12hourQueue}" timeoutUnit="MINUTES" evictionTime="0">
+			<aggregators:incremental-aggregation>
+				<logger level="DEBUG" doc:name="Aggregating payload" doc:id="e12e1575-8db0-4821-b652-2cd60ba61d04" message="groupbasedaggr" />
+			</aggregators:incremental-aggregation>
+			<aggregators:aggregation-complete>
+				<logger level="DEBUG" doc:name="Aggregation completed" doc:id="934b2555-6356-47bb-a952-fc024873ad7b" message="grp based aggr complete" />
+			</aggregators:aggregation-complete>
+		</aggregators:group-based-aggregator>
+		<anypoint-mq:ack doc:name="Manual Ack" doc:id="0f6cecc8-60e2-496e-8d37-af31f4792580" config-ref="error-notify-queue-anypoint-mq-config" ackToken="#[vars.currentAckToken12hr]"/>
+		<flow-ref doc:name="log-response-returned" doc:id="d1ed4038-aec4-47ee-816b-38a5aab17fea" name="log-response-returned"/> 
+	
+</flow>
+	<flow name="common-email-alert-aggregator-24hr-flow" doc:id="c4d2423e-2daa-48d8-8575-d8a3086af6b8" maxConcurrency="1">
+ 		<anypoint-mq:subscriber doc:name="Subscriber" doc:id="0517738c-2ce0-4462-9704-36270ab91dec" config-ref="error-notify-queue-anypoint-mq-config" destination="${mq.aggr24hourQueue}" acknowledgementMode="MANUAL">
+			<anypoint-mq:subscriber-type >
+				<anypoint-mq:polling fetchSize="${subscriber.fetchsize}">
+					<scheduling-strategy >
+						<fixed-frequency frequency="${subscriber.frequency}" startDelay="${subscriber.startdelay}"/>
+					</scheduling-strategy>
+				</anypoint-mq:polling>
+			</anypoint-mq:subscriber-type>
+		</anypoint-mq:subscriber>
+		<ee:transform doc:name="additionalLogInfo" doc:id="496b4f80-ee4a-4732-bc98-a8edf3c83a36">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable resource="dwl\additionalLogInfo.dwl" variableName="additionalLogInfo" />
+				<ee:set-variable variableName="currentAckToken24hr"><![CDATA[attributes.ackToken]]></ee:set-variable>
+			
+</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="log-request-received" doc:id="a4431f47-5d3e-4fc0-97bf-4056ee09ba71" name="log-request-received"/>
+		<ee:transform doc:name="Appending Queue Name" doc:id="8b5623c9-7dea-4077-8c90-97d2f41679b3">
+			<ee:message>
+				<ee:set-payload resource="dwl\appending_queue_name.dwl" />
+			</ee:message>
+		</ee:transform>
+		<aggregators:group-based-aggregator doc:name="Group based aggregator" doc:id="114b2176-7da4-4a55-8a7d-44a6c2068c4c" name="groupbasedaggr" objectStore="Group_Object_store" groupId="#[payload.appName]" groupSize="${aggr.groupSize}" timeout="${timeout.aggr24hourQueue}" timeoutUnit="MINUTES" evictionTime="0">
+			<aggregators:incremental-aggregation>
+				<logger level="DEBUG" doc:name="Aggregating payload" doc:id="1c784a74-ab27-4b89-b1bf-a77ee263d809" message="groupbasedaggr" />
+			</aggregators:incremental-aggregation>
+			<aggregators:aggregation-complete>
+				<logger level="DEBUG" doc:name="Aggregation completed" doc:id="01711991-fff5-4499-a351-e10f91e02885" message="grp based aggr complete" />
+			</aggregators:aggregation-complete>
+		</aggregators:group-based-aggregator>
+		<anypoint-mq:ack doc:name="Manual Ack" doc:id="98e1fbd2-dc76-4a58-b007-0ca7b7dc4d6c" config-ref="error-notify-queue-anypoint-mq-config" ackToken="#[vars.currentAckToken24hr]"/>
+		<flow-ref doc:name="log-response-returned" doc:id="31074fd8-fa99-4e9a-b223-4824f3b8056a" name="log-response-returned"/> 
+	
+</flow>
+	<flow name="common-email-alert-aggregator-listener-flow" doc:id="4385488c-8487-4acb-a351-aac4362e55c4" >
+		<aggregators:aggregator-listener doc:name="Aggregator listener" doc:id="b2a0dca7-610f-43ad-a616-6a35b3163bd8" aggregatorName="groupbasedaggr" includeTimedOutGroups="true"/>
+		<ee:transform doc:name="Storing Original Payload" doc:id="ffa07845-dd79-4d10-83a9-9cdba8f5eba1">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="original_payload"><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="additionalLogInfo" doc:id="015c3a23-c21a-4d1c-8c9a-31a72b3396b7">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="additionalLogInfo" ><![CDATA[payload[0].appName default ""]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="log-request-received" doc:id="158e829b-614e-4325-b174-6b7979c55a56" name="log-request-received"/>
+		<parse-template doc:name="HTML Template" doc:id="d9afdce7-1a93-4c99-89f1-1228d6818e1b" location="emailBody.txt" target="emailBody" outputMimeType="text/html"/>
+		<ee:transform doc:name="Transforming Payload into CSV Format" doc:id="4adbc81e-9638-4cd2-9344-7c7beb7ee858" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv
+---
+payload map {
+	"httpStatus": $.httpStatus default 500,
+	"httpMethod": $.httpMethod default "",
+	"appName": $.appName default "",
+	"exceptionType": ((write($.exceptionType, "application/json") replace "\n" with "") replace "," with " " )default "",
+	"correlationID": $.correlationID default "",
+	"timeStamp": $.timeStamp default now(),
+	"errorDescription": (($.errorDescription replace "\n" with " ") replace "," with "") default "",
+	"environment": $.environment default "",
+	"businessId": ((write($.businessId, "application/json") replace "\n" with "") replace "," with " " )default "",
+    
+	"sourceApplicationName": ($.sourceApplicationName replace "," with "   ") default "",
+	"targetApplicationName": ($.targetApplicationName replace "," with "   ") default "",
+	"apisInvolved": ($.apisInvolved replace "," with "   ") default ""
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="mailDetails" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"toEmail": payload[0].toEmail,
+	"fromEmail": if(payload[0].fromEmail != null) payload[0].fromEmail else payload[0].appName ++ "-noreply@shell.com",
+	"subject": payload[0].environment ++ " - " ++ "Consolidated MuleSoft Error Notification" ++ " - " ++ payload[0].appName
+	
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Creating FileName" doc:id="0853b05e-df25-4bb7-8215-cdda59cfb557">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var fileName = "consolidatedErrors" ++ "_" ++ now() >> "UTC" as String {format: "yyyyMMddHHmmss"} ++ ".csv" 
+---
+{
+	"$(fileName)"  : write(payload, "application/csv")
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Payload to error-standardQueue" doc:id="ea572c27-82c2-46ef-bc39-e056fef33b88" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import toBase64 from dw::core::Binaries
+output application/json
+---
+{
+	"attachmentFile": toBase64(write(payload)),
+	"emailBody": vars.emailBody.payload,
+	"ContentType": "text/html",
+	"subject": vars.mailDetails.subject,
+	"toEmail": vars.mailDetails.toEmail,
+    "fromEmail": vars.mailDetails.fromEmail
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		
+		<logger level="INFO" doc:name="Logging AppName and Email" doc:id="acb579d1-c6c8-4b6b-bcaa-13f22ab17cf4" message="----#[payload.emailBody]------#[payload.subject]------#[payload.toEmail]" />
+		<anypoint-mq:publish doc:name="publish-to-error-standardQueue" doc:id="bb9b0cac-b112-40dd-9cc7-3eaadab85ff0" config-ref="error-notify-queue-anypoint-mq-config" destination="${mq.standardErrorQueue}" />
+		<flow-ref doc:name="log-response-returned" doc:id="cc043e98-875d-4f28-bef0-662d385845de" name="log-response-returned"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="ec0bbf4f-9f2b-4b8c-a67d-76726cea0827" >
+				<ee:transform doc:name="Retrieving Original Payload And Removing Queue Name" doc:id="be5603be-75a2-4d86-aa02-2affc725c44c" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.original_payload map(value,index) -> 
+(
+	value mapObject(value1,key,index1) -> {
+	(
+		if((key) as String == "queue_name")
+		 {
+	
+		 }
+		else
+		
+		 (key) : value1
+		
+	)
+	
+}
+)
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<anypoint-mq:publish doc:name="Publish message to error queue" doc:id="e9760d42-90c1-4827-b39e-b2a5a356b9d0" config-ref="error-notify-queue-anypoint-mq-config" destination="${mq.aggrErrorQueue}" outputMimeType="application/json">
+					<anypoint-mq:properties ><![CDATA[#[output application/java
+---
+{
+	"queue_name" : vars.original_payload[0]."queue_name"
+}]]]></anypoint-mq:properties>
+				</anypoint-mq:publish>
+			<ee:transform doc:name="payload to error standard queue" doc:id="156561e9-fa6e-444d-8014-750a1f74eea7" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    "httpStatus" : "Not Applicable as it is a pub-sub pattern",
+    "httpMethod" : "Not Applicable",
+    "appName" : Mule::p('app.name'),
+    "exceptionType" : error.errorType.namespace default "MULE" ++ ":" ++ error.errorType.identifier default "ANY",
+    "correlationID" : correlationId,
+    "timeStamp" : now() as String { format: "yyyy-MM-dd'T'HH:mm:ss" },
+    "errorDescription" : error.errorMessage.payload default error.detailedDescription,   
+    "toEmail" : Mule::p('email.to'),
+    "environment" : Mule::p('mule.env'),
+    "businessId" : Mule::p('app.businessId') default "NA"   
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<anypoint-mq:publish doc:name="publish-to-error-standardQueue" doc:id="146ed674-5550-4317-9459-6c6bda28ba1d" config-ref="error-notify-queue-anypoint-mq-config" destination="${mq.standardErrorQueue}" />
+			</on-error-propagate>
+		</error-handler> 
+	</flow>
+</mule>

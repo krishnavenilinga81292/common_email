@@ -1,0 +1,15 @@
+{
+  "configs": [
+		"common-email-alert-aggregator.xml",
+		"global.xml"
+	],
+  "minMuleVersion": "4.3.0",
+  "requiredProduct": "MULE_EE",
+  "secureProperties": ["mule.secureKey"],
+	"bundleDescriptorLoader": {
+		"id": "mule",
+		"attributes": {
+			
+		}
+	}
+}

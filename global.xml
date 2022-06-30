@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq" xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd 
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<configuration-properties doc:name="Configuration properties" doc:id="2fb7da92-b68b-4201-8e5c-6f6dbf737db3" file="properties/${mule.env}-properties.yaml" />
+	<anypoint-mq:config name="error-notify-queue-anypoint-mq-config" doc:name="Anypoint MQ Config" doc:id="0f13a52b-71d0-468a-8afb-f8dc3d19502c" >
+		<anypoint-mq:connection clientId="${mq.clientId}" clientSecret="${secure::mq.clientSecret}" url="${mq.url}"/>
+	</anypoint-mq:config>
+	<os:object-store name="Group_Object_store" doc:name="Object store" doc:id="0085f08a-eba1-4d3b-8cf7-5944a7d5de36" maxEntries="-1" entryTtl="7" entryTtlUnit="DAYS" expirationInterval="3" expirationIntervalUnit="DAYS"/>
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="02090e6e-e821-47eb-9739-174fd5ea44d2" file="properties/${mule.env}-properties.yaml" key="${mule.secureKey}" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<import doc:name="Import" doc:id="0b1d039d-2726-4f91-a4c0-102e40a07c2f" file="common-logging-framework.xml" />
+	<import doc:name="Import" doc:id="833db493-0d66-43e7-b999-d601ac861b17" file="errorhandler.xml" />
+<!-- 	<import doc:name="Import" doc:id="88fc2896-8815-40aa-97de-8bcf9d2f7a61" file="common-error-handling-framework.xml" /> -->
+	<configuration doc:name="Configuration" doc:id="dd87c359-f816-4066-9eb4-58998ce952d2" defaultErrorHandler-ref="common-email-alert-aggregator-error-handler" />
+
+
+</mule>

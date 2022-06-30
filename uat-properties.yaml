@@ -1,0 +1,43 @@
+mq:
+  aggr30minQueue: "common-email-alert-aggr-30m-queue-uat"
+  aggr1hourQueue: "common-email-alert-aggr-1h-queue-uat"
+  aggr2hourQueue: "common-email-alert-aggr-2h-queue-uat"
+  aggr4hourQueue: "common-email-alert-aggr-4h-queue-uat"
+  aggr8hourQueue: "common-email-alert-aggr-8h-queue-uat"
+  aggr12hourQueue: "common-email-alert-aggr-12h-queue-uat"
+  aggr24hourQueue: "common-email-alert-aggr-24h-queue-uat"
+  aggrErrorQueue: "common-email-alert-aggr-error-queue-uat"
+  standardErrorQueue: "common-email-alert-queue-uat"
+  url: "https://mq-us-east-1.anypoint.mulesoft.com/api/v1"
+  clientId: "af28de8207e64dbc9f0d2dfabda9b3a2"
+  clientSecret: "![aAnDywCrCeZKGIfbuyouJTFsAerMh5b0u4Jc8Tr4IQFC7zbNLAOJVQ==]"
+  
+  
+aggr:
+  groupSize: "500"
+  
+timeout:
+  aggr30minQueue: "30"
+  aggr1hourQueue: "60"
+  aggr2hourQueue: "120"
+  aggr4hourQueue: "240"
+  aggr8hourQueue: "480"
+  aggr12hourQueue: "720"
+  aggr24hourQueue: "1440"
+  
+app:
+  name: "common-email-alert-aggregator"
+  businessId: "12345678"
+  
+email:
+  to: "a.thammyshetty@shell.com"
+  
+mule:
+  env: "UAT"
+  
+subscriber:
+  fetchsize : "10"
+  frequency : "1000"
+  startdelay: "0"
+
+  
